@@ -13,12 +13,8 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject",
-    "dev": "nodemon --exec 'netlify dev'"
-  },
+    "start": "nodemon functions/autocompletionScraper.js --exec 'netlify dev --open=false'"
+},
   "eslintConfig": {
     "extends": [
       "react-app",
@@ -38,7 +34,6 @@
     ]
   },
   "devDependencies": {
-    "browser-sync": "^3.0.2",
     "netlify-cli": "^17.26.1",
     "nodemon": "^3.1.3"
   }
