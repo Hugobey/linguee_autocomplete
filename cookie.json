@@ -1,0 +1,16 @@
+[
+  {
+    "name": "cookie",
+    "value": "8ce88f35-6cef-9ec7-a44b-a21f97bda954:0",
+    "domain": ".linguee.fr",
+    "path": "/",
+    "expires": 1752598031.544075,
+    "size": 44,
+    "httpOnly": false,
+    "secure": false,
+    "session": false,
+    "priority": "Medium",
+    "sameParty": false,
+    "sourceScheme": "Secure"
+  }
+]

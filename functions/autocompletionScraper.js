@@ -3,49 +3,66 @@
 const puppeteer = require ('puppeteer');
 const fs = require('fs');
 
-exports.handler = async (event, context) => {
-
-    // Functions handling cookie management
-    const saveCookies = async (page) => {
-        try {
-            // const cookies = await page.cookies();
-            fs.writeFile('cookie.json', JSON.stringify(await page.cookies(), null, 2))
-            return true
-        } catch (error) {
-            console.error('Error saving cookies');
-        }
-    };
-    const loadCookies = async (page) => {
-        try {
-            if(fs.existsSync('cookie.json')){
-                const cookies = JSON.parse(fs.readFile('cookie.json'));
-                await page.saveCookies(...cookies)
+// Functions handling cookie management
+const saveCookies = async (page) => {
+    const cookies = await page.cookies();
+        fs.writeFile('cookie.json', JSON.stringify(cookies, null, 2), (err) => {
+            if (err) {
+              console.error('Error saving cookies:', err);
             } else {
-                return false
-            }
-        } catch (error) {
-            console.error('Error while loading cookies', error)
-        };
+              console.log('Cookies saved successfully.');
+            } 
+    });
+}
+const loadCookies = async (page) => {
+    try {
+        fs.access('cookie.json', (err) => {
+            if (err) {
+                console.error('File does not exist or cannot be accessed');
+                return false;
+            } else {
+                console.log('File exists and can be accessed');
+                fs.readFile('cookie.json', (err, data) => {
+                    if(err) {
+                        console.error('File cannot be read', err);
+                        return false;
+                    } else {
+                        const cookies = JSON.parse(data)
+                        console.log('Cookies loaded successfully', cookies);
+                        return cookies;
+                    }
+                });
+            };
+        });
+    } catch (error) {
+        console.error('Error while loading cookies', error);
+        return false;
     };
+};
 
-    // Puppeteer scraping
+exports.handler = async (event, context) => {
+    
     try {
         const browser = await puppeteer.launch();
         const page = await browser.newPage();
+        const cookies = await loadCookies(page);
+        console.log('Are there any cookies?', cookies)
 
         await page.goto('https://www.linguee.fr/');
 
-        const areThereCookies = await loadCookies(page);
-        console.log('Cookies', areThereCookies)
+        // NEEDS TO CHAIN THE EXECUTION OF LOADCOOKIES BEFORE THE SAVEDCOOKIES IS EXECUTED
+        cookies
+        .then((cookies) => {
+            if(cookies) {
 
-        if(!areThereCookies) {
+            }
+        })
+        if(!cookies) {
             await page.waitForSelector('#accept-choices');
             await saveCookies(page);
-            console.log('Saving cookies...')
         } else {
-            await loadCookies(page);
-            console.log('Loading cookies...')
-        };
+            await page.setCookie(...cookies);
+        }
     
         await page.click('#accept-choices');
         await page.waitForSelector('#queryinput');
