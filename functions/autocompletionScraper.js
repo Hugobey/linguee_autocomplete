@@ -1,5 +1,3 @@
-// functions/test.js
-
 const puppeteer = require ('puppeteer');
 const fs = require('fs');
 
@@ -53,9 +51,10 @@ exports.handler = async (event, context) => {
             loadCookies()
             .then(async (cookies) => {
                 console.log('Cookies in chained promise')
-                browser = await puppeteer.launch();
+                browser = await puppeteer.launch({
+                    headless: true // Remove graphic interface
+                });
                 page = await browser.newPage();
-    
                 if(browser && page){
                     if(!cookies) {
                         await page.goto('https://www.linguee.fr/');
@@ -75,10 +74,32 @@ exports.handler = async (event, context) => {
                 await page.waitForSelector('#queryinput');
                 await page.focus('#queryinput');
                 await page.type('#queryinput', 'dust');
-                
                 await page.waitForSelector('.autocompletion_item.sourceIsLang2.isForeignTerm')
+                
+                try {
+                    const data = await page.evaluate(() => {
+                        const itemDiv = document.querySelector('.autocompletion_item.sourceIsLang2.isForeignTerm');
+                        const textArray = [];
+
+                        if(itemDiv) {
+                            const autocompletionDiv = itemDiv.querySelector('.autocompletion');
+                            if(autocompletionDiv){
+                                const divs = autocompletionDiv.querySelectorAll('div')
+                                divs.forEach(div => {
+                                    textArray.push(div.textContent.trim())
+                                })
+                            }
+                        }
+                        return textArray;
+                    })
+                    console.log("AHA", data)
+                } catch (err) {
+                    console.error('An error has occured while converting div into text', err)
+                };
+
                 await page.screenshot({path: 'screenshot.png', fullPage:true})
                 await browser.close();
+
                 resolve({
                     statusCode: 200,
                     body: JSON.stringify({ message: 'Sending data with success!'})
