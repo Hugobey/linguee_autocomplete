@@ -3,7 +3,7 @@
 const puppeteer = require ('puppeteer');
 const fs = require('fs');
 
-// Functions handling cookie management
+// Handling cookie management
 const saveCookies = async (page) => {
     const cookies = await page.cookies();
         fs.writeFile('cookie.json', JSON.stringify(cookies, null, 2), (err) => {
@@ -14,57 +14,62 @@ const saveCookies = async (page) => {
             } 
     });
 }
-const loadCookies = async (page) => {
-    try {
-        fs.access('cookie.json', (err) => {
-            if (err) {
-                console.error('File does not exist or cannot be accessed');
-                return false;
-            } else {
-                console.log('File exists and can be accessed');
-                fs.readFile('cookie.json', (err, data) => {
-                    if(err) {
-                        console.error('File cannot be read', err);
-                        return false;
-                    } else {
-                        const cookies = JSON.parse(data)
-                        console.log('Cookies loaded successfully', cookies);
-                        return cookies;
-                    }
-                });
-            };
-        });
-    } catch (error) {
-        console.error('Error while loading cookies', error);
-        return false;
-    };
+const loadCookies = (page) => {
+    return new Promise (async (resolve, reject) => {
+        try {
+            fs.access('cookie.json', (err) => {
+                if (err) {
+                    console.error('File does not exist or cannot be accessed');
+                    reject(err);
+                    return false;
+                } else {
+                    console.log('File exists and can be accessed');
+                    fs.readFile('cookie.json', (err, data) => {
+                        if(err) {
+                            console.error('File cannot be read', err);
+                            reject(err);
+                            return false;
+                        } else {
+                            const cookies = JSON.parse(data)
+                            resolve(cookies);
+                            return cookies;
+                        }
+                    });
+                };
+            });
+        } catch (error) {
+            console.error('Error while loading cookies', error);
+            reject(error);
+            return false;
+        };
+    });
 };
 
 exports.handler = async (event, context) => {
-    
+
     try {
         const browser = await puppeteer.launch();
         const page = await browser.newPage();
-        const cookies = await loadCookies(page);
-        console.log('Are there any cookies?', cookies)
-
-        await page.goto('https://www.linguee.fr/');
-
-        // NEEDS TO CHAIN THE EXECUTION OF LOADCOOKIES BEFORE THE SAVEDCOOKIES IS EXECUTED
-        cookies
-        .then((cookies) => {
+        await page.goto('https://www.linguee.fr/');        
+        // const cookies = await loadCookies(page);
+        // console.log('Are there any cookies?', cookies)
+        loadCookies(page)
+        .then(async (cookies) => {
             if(cookies) {
-
-            }
+                console.log('Cookies in chained promise', cookies)
+                if(!cookies) {
+                    await page.waitForSelector('#accept-choices');
+                    await page.click('#accept-choices');
+                    await saveCookies(page);
+                    console.log('Send to saveCookie function')
+                } else {
+                    await page.setCookie(...cookies);
+                    await page.reload({ waitUntil: ["networkidle0", "domcontentloaded"] });
+                    console.log('Cookies loaded from files')
+                };
+            };
         })
-        if(!cookies) {
-            await page.waitForSelector('#accept-choices');
-            await saveCookies(page);
-        } else {
-            await page.setCookie(...cookies);
-        }
-    
-        await page.click('#accept-choices');
+
         await page.waitForSelector('#queryinput');
         await page.focus('#queryinput');
         await page.type('#queryinput', 'dust');
