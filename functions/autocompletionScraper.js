@@ -83,80 +83,79 @@ const fetchTranslationsFromPage = async (page) => {
     });
 };
 
+const mainFunction = async (query) => {
+    return new Promise ((resolve, reject) => {
+        try {     
+            loadCookies()
+            .then(async (cookies) => {
+                console.log('Cookies in chained promise')
+                browser = await puppeteer.launch({
+                    headless: true // Remove graphic interface
+                });
+                page = await browser.newPage();
+
+                if(browser && page){  // load the page et browser before the cookies
+                    if(!cookies) {
+                        await page.goto('https://www.linguee.fr/');
+                        await page.waitForSelector('#accept-choices');
+                        await page.click('#accept-choices');
+                        await saveCookies(page);
+                        console.log('Send to saveCookie function');
+                    } else {
+                        await page.setCookie(...cookies);
+                        await page.goto('https://www.linguee.fr/');   
+                        console.log('Cookies loaded from files')
+                    };
+                };
+            })
+            .then(async () => {
+                await page.waitForSelector('#queryinput');
+                await page.focus('#queryinput');
+                await page.type('#queryinput', `${query}`);
+                await page.waitForSelector('.autocompletion_item.sourceIsLang2.isForeignTerm')
+                
+                try {
+                    const translationData = await fetchTranslationsFromPage(page);
+                    console.log('Fetched translation data:', translationData);
+                    await browser.close();
+                    resolve(translationData);
+                    
+                } catch (err) {
+                    console.error('An error has occured while converting div into text', err)
+                };
+                // await page.screenshot({path: 'screenshot.png', fullPage:true})
+            })
+            .catch((error) => {
+                console.error('Error while chaining cookies', error)
+            })
+    
+        } catch (err) {
+            console.error('An error occured while running the script', err);
+            reject({
+                statusCode: 500,
+                body: JSON.stringify({ error: err.message})
+            })
+        }
+    });
+}
+
 let page, browser;
 
 exports.handler = async (event, context) => {
     
     try {
-        
         const query = event.queryStringParameters.query;
-        
         if(!query) {
             return {
                 statusCode: 400, 
                 body: JSON.stringify({error: 'Query parameter required!'})
             };
         };
-        
-        return new Promise ((resolve, reject) => {
-    
-            try {     
-                loadCookies()
-                .then(async (cookies) => {
-                    console.log('Cookies in chained promise')
-                    browser = await puppeteer.launch({
-                        headless: true // Remove graphic interface
-                    });
-                    page = await browser.newPage();
-    
-                    if(browser && page){  // load the page et browser before the cookies
-                        if(!cookies) {
-                            await page.goto('https://www.linguee.fr/');
-                            await page.waitForSelector('#accept-choices');
-                            await page.click('#accept-choices');
-                            await saveCookies(page);
-                            console.log('Send to saveCookie function');
-                        } else {
-                            await page.setCookie(...cookies);
-                            await page.goto('https://www.linguee.fr/');   
-                            console.log('Cookies loaded from files')
-                        };
-                    };
-                })
-                .then(async () => {
-                    await page.waitForSelector('#queryinput');
-                    await page.focus('#queryinput');
-                    await page.type('#queryinput', `${query}`);
-                    await page.waitForSelector('.autocompletion_item.sourceIsLang2.isForeignTerm')
-                    
-                    try {
-                        const translationData = await fetchTranslationsFromPage(page);
-                        console.log('Fetched translation data:', translationData);
-    
-                    } catch (err) {
-                        console.error('An error has occured while converting div into text', err)
-                    };
-    
-                    await page.screenshot({path: 'screenshot.png', fullPage:true})
-                    await browser.close();
-    
-                    resolve({
-                        statusCode: 200,
-                        body: JSON.stringify({ message: 'Sending data with success!'})
-                    });
-                })
-                .catch((error) => {
-                    console.error('Error while chaining cookies', error)
-                })
-        
-            } catch (err) {
-                console.error('An error occured while running the script', err);
-                reject({
-                    statusCode: 500,
-                    body: JSON.stringify({ error: err.message})
-                })
-            }
-        });
+        const result = await mainFunction(query);
+        return {
+            statusCode: 200,
+            body: JSON.stringify(result)
+        };
 
     } catch(err) {
         console.error('Error occured', err);
