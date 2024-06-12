@@ -119,14 +119,16 @@ const mainFunction = async (query) => {
                     console.log('Fetched translation data:', translationData);
                     await browser.close();
                     resolve(translationData);
-                    
+
                 } catch (err) {
                     console.error('An error has occured while converting div into text', err)
+                    reject (err);
                 };
                 // await page.screenshot({path: 'screenshot.png', fullPage:true})
             })
             .catch((error) => {
                 console.error('Error while chaining cookies', error)
+                reject(error);
             })
     
         } catch (err) {
@@ -151,15 +153,14 @@ exports.handler = async (event, context) => {
                 body: JSON.stringify({error: 'Query parameter required!'})
             };
         };
-        const result = await mainFunction(query);
+        await mainFunction(query);
         return {
             statusCode: 200,
-            body: JSON.stringify(result)
+            body: JSON.stringify('Hello World')
         };
 
     } catch(err) {
         console.error('Error occured', err);
-
         return {
             statusCode: 500,
             body: JSON.stringify({error: 'Internal Server Error' })
