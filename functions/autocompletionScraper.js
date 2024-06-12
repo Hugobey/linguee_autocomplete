@@ -44,52 +44,44 @@ const loadCookies = () => {
     });
 };
 
-const fetchChildDivFromDocument = async (page, parentDivClass, parentDiv) => {
-    return new Promise ((resolve, reject) => {
-        if(!parentDiv){
-            resolve(page.evaluate((parentDivClass) => {
-                    const childDiv = document.querySelector(`${parentDivClass}`);
-                    if (childDiv) {
-                        return childDiv; // or any other property you need
+const fetchTranslationsFromPage = async (page) => {
+    return page.evaluate(() => {
+        const autoCompletionDiv = document.querySelector('.autocompletion');
+
+        if(autoCompletionDiv){
+            const itemDivs = autoCompletionDiv.querySelectorAll('.autocompletion_item.sourceIsLang2.isForeignTerm');
+            totalDivs = itemDivs
+            return Array.from(itemDivs).map(itemDiv => {
+
+                if (itemDiv) {
+                    const mainRowDiv = itemDiv.querySelector('.main_row');
+                    let mainWord = null;
+                    let wordTypes = [];
+        
+                    if (mainRowDiv) {
+                        const mainItemDiv = mainRowDiv.querySelector('.main_item');
+                        mainWord = mainItemDiv ? mainItemDiv.innerText.trim() : null;
+        
+                        const wordTypeDivs = mainRowDiv.querySelectorAll('.main_wordtype');
+                        wordTypes = Array.from(wordTypeDivs).map(div => div.innerText.trim());
                     };
-                    return null;
-            }, parentDivClass))
-        };
-    })
-};
-
-const fetchTranslationsFromPage = async (page, itemClass) => {
-    return page.evaluate((itemClass) => {
-        const itemDiv = document.querySelector(`.${itemClass}`);
-        if (itemDiv) {
-            const mainRowDiv = itemDiv.querySelector('.main_row');
-            let mainWord = null;
-            let wordTypes = [];
-
-            if (mainRowDiv) {
-                const mainItemDiv = mainRowDiv.querySelector('.main_item');
-                mainWord = mainItemDiv ? mainItemDiv.innerText.trim() : null;
-
-                const wordTypeDivs = mainRowDiv.querySelectorAll('.main_wordtype');
-                wordTypes = Array.from(wordTypeDivs).map(div => div.innerText.trim());
-            }
-
-            const translationRows = itemDiv.querySelectorAll('.translation_row.line.singleline');
-            const translationTexts = Array.from(translationRows).map(row => row.innerText.trim());
-
-            return {
-                mainRow: {
-                    mainWord,
-                    wordTypes
-                },
-                translations: translationTexts
-            };
+        
+                    const translationRows = itemDiv.querySelectorAll('.translation_row.line.singleline');
+                    const translationTexts = Array.from(translationRows).map(row => row.innerText.trim());
+        
+                    return {
+                        mainRow: {
+                            mainWord,
+                            wordTypes
+                        },
+                        translations: translationTexts
+                    };
+                };
+            })
         }
-        return null;
-    }, itemClass);
+        return []
+    });
 };
-
-
 
 
 let page, browser;
@@ -124,30 +116,12 @@ exports.handler = async (event, context) => {
             .then(async () => {
                 await page.waitForSelector('#queryinput');
                 await page.focus('#queryinput');
-                await page.type('#queryinput', 'dust');
+                await page.type('#queryinput', 'dus');
                 await page.waitForSelector('.autocompletion_item.sourceIsLang2.isForeignTerm')
                 
                 try {
-                    // const mainContainer = await page.evaluate(() => {
-                    //     const itemDiv = document.querySelector('.autocompletion_item.sourceIsLang2.isForeignTerm');
-                    //     const textArray = [];
-                    //     return itemDiv
-                    // });
-                    const data = await page.evaluate(() => {
-                        const child = document.querySelectorAll('.main_row')
-                        return child
-                    });
-                    console.log('data', data)
-
-                    await fetchChildDivFromDocument(page, '.autocompletion_item.sourceIsLang2', null)
-                    .then(async (parentContainer) => {
-                        console.log('HERE', parentContainer)
-                    });
-
                      // Fetch the translations from the specified class
-                    const itemClass = 'autocompletion_item.sourceIsLang2.isForeignTerm';
-                    const translationData = await fetchTranslationsFromPage(page, itemClass);
-
+                    const translationData = await fetchTranslationsFromPage(page);
                     console.log('Fetched translation data:', translationData);
 
                 } catch (err) {
