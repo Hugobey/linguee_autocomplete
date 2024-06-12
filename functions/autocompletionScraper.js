@@ -83,7 +83,7 @@ const fetchTranslationsFromPage = async (page) => {
     });
 };
 
-const mainFunction = async (query) => {
+const mainFunction = (query) => {
     return new Promise ((resolve, reject) => {
         try {     
             loadCookies()
@@ -153,10 +153,10 @@ exports.handler = async (event, context) => {
                 body: JSON.stringify({error: 'Query parameter required!'})
             };
         };
-        await mainFunction(query);
+        mainFunction(query);
         return {
             statusCode: 200,
-            body: JSON.stringify('Hello World')
+            body: JSON.stringify(`Success! Autocompletion query param: ${query}`)
         };
 
     } catch(err) {
