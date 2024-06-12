@@ -153,7 +153,7 @@ exports.handler = async (event, context) => {
                 body: JSON.stringify({error: 'Query parameter required!'})
             };
         };
-        // await mainFunction(query);
+        await mainFunction(query);
         return {
             statusCode: 200,
             body: JSON.stringify('Hello World')
