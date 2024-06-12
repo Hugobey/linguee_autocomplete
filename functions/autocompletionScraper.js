@@ -1,8 +1,7 @@
 const puppeteer = require ('puppeteer');
 const fs = require('fs');
-const { resolveTxt } = require('dns');
 
-// Handling cookie management
+// COOKIES
 const saveCookies = async (page) => {
     const cookies = await page.cookies();
         fs.writeFile('cookie.json', JSON.stringify(cookies, null, 2), (err) => {
@@ -12,7 +11,7 @@ const saveCookies = async (page) => {
               console.log('Cookies saved successfully.');
             } 
     });
-}
+};
 const loadCookies = () => {
     return new Promise (async (resolve, reject) => {
         try {
@@ -44,6 +43,7 @@ const loadCookies = () => {
     });
 };
 
+// FETCH DIV
 const fetchTranslationsFromPage = async (page) => {
     return page.evaluate(() => {
         const autoCompletionDiv = document.querySelector('.autocompletion');
@@ -83,10 +83,18 @@ const fetchTranslationsFromPage = async (page) => {
     });
 };
 
-
 let page, browser;
 
 exports.handler = async (event, context) => {
+    const query = event.queryStringParameters.query;
+
+    if(!query) {
+        return {
+            statusCode: 400, 
+            body: JSON.stringify({error: 'Query parameter required!'})
+        };
+    };
+
     return new Promise ((resolve, reject) => {
 
         try {     
@@ -98,7 +106,7 @@ exports.handler = async (event, context) => {
                 });
                 page = await browser.newPage();
 
-                if(browser && page){
+                if(browser && page){  // load the page et browser before the cookies
                     if(!cookies) {
                         await page.goto('https://www.linguee.fr/');
                         await page.waitForSelector('#accept-choices');
@@ -108,7 +116,6 @@ exports.handler = async (event, context) => {
                     } else {
                         await page.setCookie(...cookies);
                         await page.goto('https://www.linguee.fr/');   
-                        // await page.reload({ waitUntil: ["networkidle0", "domcontentloaded"] });
                         console.log('Cookies loaded from files')
                     };
                 };
@@ -116,11 +123,10 @@ exports.handler = async (event, context) => {
             .then(async () => {
                 await page.waitForSelector('#queryinput');
                 await page.focus('#queryinput');
-                await page.type('#queryinput', 'dus');
+                await page.type('#queryinput', `${query}`);
                 await page.waitForSelector('.autocompletion_item.sourceIsLang2.isForeignTerm')
                 
                 try {
-                     // Fetch the translations from the specified class
                     const translationData = await fetchTranslationsFromPage(page);
                     console.log('Fetched translation data:', translationData);
 
