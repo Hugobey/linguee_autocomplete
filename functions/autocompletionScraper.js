@@ -14,7 +14,8 @@ const saveCookies = async (page) => {
     });
 };
 const loadCookies = () => {
-    const cookiesFilePath = path.resolve(process.cwd(), 'cookie.json');
+    const cookiesFilePath = path.resolve(__dirname, '../cookie.json');
+    console.log('path', cookiesFilePath);
     return new Promise ((resolve, reject) => {
         try {
             fs.access(cookiesFilePath, fs.constants.R_OK, (err) => {

@@ -3,6 +3,9 @@
     command = "CI= npm run build"
     publish = "build"
 
+[functions]
+  included_files = ["cookies.json"]
+
 [context.production]
   [context.production.environment]
     NETLIFY_SITE_ID = "f11d77d1-1246-43f0-bdea-1e60b0ff7aed"
