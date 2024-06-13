@@ -83,9 +83,11 @@ const fetchDataFromDivs= async (page) => {
     });
 };
 
-const mainFunction = (query) => {
+const mainFunction = async (query) => {
+
     return new Promise ((resolve, reject) => {
         try {     
+            
             loadCookies()
             .then(async (cookies) => {
                 console.log('Cookies in chained promise')
@@ -117,9 +119,9 @@ const mainFunction = (query) => {
                 try {
                     const translationData = await fetchDataFromDivs(page);
                     console.log('Fetched translation data:', translationData);
-                    resolve(translationData);
                     // await page.screenshot({path: 'screenshot.png', fullPage:true})
                     await browser.close();
+                    resolve(translationData);
 
                 } catch (err) {
                     console.error('An error has occured while converting div into text', err)
@@ -133,10 +135,7 @@ const mainFunction = (query) => {
     
         } catch (err) {
             console.error('An error occured while running the script', err);
-            reject({
-                statusCode: 500,
-                body: JSON.stringify({ error: err.message})
-            })
+            reject(err)
         }
     });
 }
@@ -147,23 +146,38 @@ exports.handler = async (event, context) => {
     
     try {
         const query = event.queryStringParameters.query;
-        if(!query) {
-            return {
-                statusCode: 400, 
-                body: JSON.stringify({error: 'Query parameter required!'})
+            if(!query) {
+                return {
+                    statusCode: 400, 
+                    body: JSON.stringify({error: 'Query parameter required!'}),
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                };
             };
-        };
-        mainFunction(query);
+
+        const data = await mainFunction(query);
+
+        if(data);
         return {
             statusCode: 200,
-            body: JSON.stringify(`Success! Autocompletion query param: ${query}`)
+            body: JSON.stringify({
+                message: `Success! Autocompletion query param: ${query}`,
+                data: data,
+            }),
+            headers: {
+                'Content-Type': 'application/json'
+            }
         };
 
     } catch(err) {
         console.error('Error occured', err);
         return {
             statusCode: 500,
-            body: JSON.stringify({error: 'Internal Server Error' })
+            body: JSON.stringify({error: 'Internal Server Error' }),
+            headers: {
+                'Content-Type': 'application/json'
+            }
         };
     };
 };
