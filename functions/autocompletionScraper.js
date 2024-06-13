@@ -1,5 +1,6 @@
 const puppeteer = require ('puppeteer');
 const fs = require('fs');
+const path = require('path');
 
 // COOKIES
 const saveCookies = async (page) => {
@@ -12,21 +13,20 @@ const saveCookies = async (page) => {
             } 
     });
 };
-const loadCookies = async () => {
-    return new Promise (async (resolve, reject) => {
+const loadCookies = () => {
+    const cookiesFilePath = path.resolve(process.cwd(), 'cookie.json');
+    return new Promise ((resolve, reject) => {
         try {
-            fs.access('cookie.json', (err) => {
+            fs.access(cookiesFilePath, fs.constants.R_OK, (err) => {
                 if (err) {
-                    console.error('File does not exist or cannot be accessed');
+                    console.error('File does not exist or cannot be accessed', err);
                     reject(err);
-                    return false;
                 } else {
                     console.log('File exists and can be accessed');
-                    fs.readFile('cookie.json', (err, data) => {
+                    fs.readFile(cookiesFilePath, async (err, data) => {
                         if(err) {
                             console.error('File cannot be read', err);
                             reject(err);
-                            return false;
                         } else {
                             const cookies = JSON.parse(data)
                             resolve(cookies);
@@ -93,7 +93,7 @@ const mainFunction = (query) => {
                 });
                 page = await browser.newPage();
 
-                if(browser && page){  // load the page et browser before the cookies
+                if(browser && page){  // load the page and browser before fetching cookies
                     if(!cookies) {
                         await page.goto('https://www.linguee.fr/');
                         await page.waitForSelector('#accept-choices');
