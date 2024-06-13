@@ -12,7 +12,7 @@ const saveCookies = async (page) => {
             } 
     });
 };
-const loadCookies = () => {
+const loadCookies = async () => {
     return new Promise (async (resolve, reject) => {
         try {
             fs.access('cookie.json', (err) => {
@@ -30,7 +30,6 @@ const loadCookies = () => {
                         } else {
                             const cookies = JSON.parse(data)
                             resolve(cookies);
-                            return cookies;
                         }
                     });
                 };
@@ -38,7 +37,6 @@ const loadCookies = () => {
         } catch (error) {
             console.error('Error while loading cookies', error);
             reject(error);
-            return false;
         };
     });
 };
@@ -83,11 +81,10 @@ const fetchDataFromDivs= async (page) => {
     });
 };
 
-const mainFunction = async (query) => {
+const mainFunction = (query) => {
 
-    return new Promise ((resolve, reject) => {
+    return new Promise (async (resolve, reject) => {
         try {     
-            
             loadCookies()
             .then(async (cookies) => {
                 console.log('Cookies in chained promise')
