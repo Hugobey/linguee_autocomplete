@@ -44,12 +44,12 @@ const loadCookies = () => {
 };
 
 // FETCH DIV
-const fetchTranslationsFromPage = async (page) => {
+const fetchDataFromDivs= async (page) => {
     return page.evaluate(() => {
         const autoCompletionDiv = document.querySelector('.autocompletion');
 
         if(autoCompletionDiv){
-            const itemDivs = autoCompletionDiv.querySelectorAll('.autocompletion_item.sourceIsLang2.isForeignTerm');
+            const itemDivs = autoCompletionDiv.querySelectorAll('.autocompletion_item');
             totalDivs = itemDivs
             return Array.from(itemDivs).map(itemDiv => {
 
@@ -112,19 +112,19 @@ const mainFunction = (query) => {
                 await page.waitForSelector('#queryinput');
                 await page.focus('#queryinput');
                 await page.type('#queryinput', `${query}`);
-                await page.waitForSelector('.autocompletion_item.sourceIsLang2.isForeignTerm')
+                await page.waitForSelector('.autocompletion_item')
                 
                 try {
-                    const translationData = await fetchTranslationsFromPage(page);
+                    const translationData = await fetchDataFromDivs(page);
                     console.log('Fetched translation data:', translationData);
-                    await browser.close();
                     resolve(translationData);
+                    // await page.screenshot({path: 'screenshot.png', fullPage:true})
+                    await browser.close();
 
                 } catch (err) {
                     console.error('An error has occured while converting div into text', err)
                     reject (err);
                 };
-                // await page.screenshot({path: 'screenshot.png', fullPage:true})
             })
             .catch((error) => {
                 console.error('Error while chaining cookies', error)
