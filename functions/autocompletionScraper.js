@@ -159,7 +159,7 @@ const mainFunction = (query) => {
     });
 };
 
-exports.handler = async (event, context) => {
+exports.handler = async (event, context, callback) => {
     
     try {
         const query = event.queryStringParameters.query;
