@@ -2,7 +2,10 @@
     functions = "functions"
     command = "CI= npm run build"
     publish = "build"
-    environment = { CHROME_WS_ENDPOINT = "ws://Applications/Chromium.app/Contents/MacOS/Chromium" }
+
+[build.environment]
+  NODE_ENV = "production"    # Sets the Node environment to 'production'
+  PUPPETEER_SKIP_CHROMIUM_DOWNLOAD = "true"   # Tells Puppeteer not to download Chromium during build
 
 [functions]
   node_bundler = "esbuild"
