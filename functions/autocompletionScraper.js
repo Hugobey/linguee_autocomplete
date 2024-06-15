@@ -1,4 +1,5 @@
 const puppeteer = process.env.NODE_ENV === 'production' ? require('puppeteer-core') : require('puppeteer')
+const chromium = require('@sparticuz/chromium');
 const fs = require('fs');
 const path = require('path');
 require('dotenv').config();
@@ -162,15 +163,23 @@ exports.handler = async (event, context) => {
     
     try {
         const query = event.queryStringParameters.query;
-            if(!query) {
-                return {
-                    statusCode: 400, 
-                    body: JSON.stringify({error: 'Query parameter required!'}),
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                };
+        if(!query) {
+            return {
+                statusCode: 400, 
+                body: JSON.stringify({error: 'Query parameter required!'}),
+                headers: {
+                    'Content-Type': 'application/json'
+                }
             };
+            // callback(null, {
+            //     statusCode: 400, 
+            //     body: JSON.stringify({error: 'Query parameter required!'}),
+            //     headers: {
+            //         'Content-Type': 'application/json'
+            //     }
+            // });
+            // return
+        };
 
         const data = await mainFunction(query);
         if(data);
@@ -184,6 +193,17 @@ exports.handler = async (event, context) => {
                 'Content-Type': 'application/json'
             }
         };
+        // callback(null, {
+        //     statusCode: 200,
+        //     body: JSON.stringify({
+        //         message: `Success! Autocompletion query param: ${query}`,
+        //         data: data,
+        //     }),
+        //     headers: {
+        //         'Content-Type': 'application/json'
+        //     }
+        // }); 
+        // return;
 
     } catch(err) {
         console.error('Error occured', err);
@@ -194,5 +214,13 @@ exports.handler = async (event, context) => {
                 'Content-Type': 'application/json'
             }
         };
+        // callback(null, {
+        //     statusCode: 500,
+        //     body: JSON.stringify({error: 'Internal Server Error' }),
+        //     headers: {
+        //         'Content-Type': 'application/json'
+        //     }
+        // });
+        // return;  
     };
 };
