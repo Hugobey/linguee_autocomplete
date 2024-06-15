@@ -164,36 +164,26 @@ exports.handler = async (event, context) => {
     try {
         const query = event.queryStringParameters.query;
         if(!query) {
-            return {
-                statusCode: 400, 
-                body: JSON.stringify({error: 'Query parameter required!'}),
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            };
-            // callback(null, {
+            // return {
             //     statusCode: 400, 
             //     body: JSON.stringify({error: 'Query parameter required!'}),
             //     headers: {
             //         'Content-Type': 'application/json'
             //     }
-            // });
-            // return
+            // };
+            callback(null, {
+                statusCode: 400, 
+                body: JSON.stringify({error: 'Query parameter required!'}),
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            return;
         };
 
         const data = await mainFunction(query);
         if(data);
-        return {
-            statusCode: 200,
-            body: JSON.stringify({
-                message: `Success! Autocompletion query param: ${query}`,
-                data: data,
-            }),
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        };
-        // callback(null, {
+        // return {
         //     statusCode: 200,
         //     body: JSON.stringify({
         //         message: `Success! Autocompletion query param: ${query}`,
@@ -202,25 +192,33 @@ exports.handler = async (event, context) => {
         //     headers: {
         //         'Content-Type': 'application/json'
         //     }
-        // }); 
-        // return;
-
-    } catch(err) {
-        console.error('Error occured', err);
-        return {
-            statusCode: 500,
-            body: JSON.stringify({error: 'Internal Server Error' }),
+        // };
+        callback(null, {
+            statusCode: 200,
+            body: JSON.stringify({
+                message: `Success! Autocompletion query param: ${query}`,
+                data: data,
+            }),
             headers: {
                 'Content-Type': 'application/json'
             }
-        };
-        // callback(null, {
+        }); 
+
+    } catch(err) {
+        console.error('Error occured', err);
+        // return {
         //     statusCode: 500,
         //     body: JSON.stringify({error: 'Internal Server Error' }),
         //     headers: {
         //         'Content-Type': 'application/json'
         //     }
-        // });
-        // return;  
+        // };
+        callback(null, {
+            statusCode: 500,
+            body: JSON.stringify({error: 'Internal Server Error' }),
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
     };
 };
