@@ -2,18 +2,11 @@
     functions = "functions"
     command = "CI= npm run build"
     publish = "build"
+    environment = { CHROME_WS_ENDPOINT = "ws://Applications/Chromium.app/Contents/MacOS/Chromium" }
 
 [functions]
-  included_files = ["cookies.json"]
+  node_bundler = "esbuild"
+  included_files = ["functions/data/*"]
 
-[context.production]
-  [context.production.environment]
-    NETLIFY_SITE_ID = "f11d77d1-1246-43f0-bdea-1e60b0ff7aed"
-
-[context.deploy-preview]
-  [context.deploy-preview.environment]
-    NETLIFY_SITE_ID = "f11d77d1-1246-43f0-bdea-1e60b0ff7aed"
-
-[context.branch-deploy]
-  [context.branch-deploy.environment]
-    NETLIFY_SITE_ID = "f11d77d1-1246-43f0-bdea-1e60b0ff7aed"
+[context.production.environment]
+    NODE_ENV = "production"

@@ -1,6 +1,8 @@
-const puppeteer = require ('puppeteer');
+const puppeteer = process.env.NODE_ENV === 'production' ? require('puppeteer-core') : require('puppeteer')
 const fs = require('fs');
 const path = require('path');
+require('dotenv').config();
+
 
 // COOKIES
 const saveCookies = async (page) => {
@@ -14,7 +16,7 @@ const saveCookies = async (page) => {
     });
 };
 const loadCookies = () => {
-    const cookiesFilePath = path.resolve(__dirname, '../cookie.json');
+    const cookiesFilePath = path.resolve(process.cwd(), 'functions/data/cookie.json');
     console.log('path', cookiesFilePath);
     return new Promise ((resolve, reject) => {
         try {
@@ -23,7 +25,6 @@ const loadCookies = () => {
                     console.error('File does not exist or cannot be accessed', err);
                     reject(err);
                 } else {
-                    console.log('File exists and can be accessed');
                     fs.readFile(cookiesFilePath, async (err, data) => {
                         if(err) {
                             console.error('File cannot be read', err);
@@ -83,15 +84,31 @@ const fetchDataFromDivs= async (page) => {
 };
 
 const mainFunction = (query) => {
-
     return new Promise (async (resolve, reject) => {
+        let browser = null; let page;
         try {     
             loadCookies()
             .then(async (cookies) => {
-                console.log('Cookies in chained promise')
-                browser = await puppeteer.launch({
-                    headless: true // Remove graphic interface
-                });
+                try {
+                    if(process.env.NODE_ENV === 'production'){
+                        browser = await puppeteer.connect({
+                            args: chromium.args,
+                            defaultViewport: chromium.defaultViewport,
+                            executablePath: await chromium.executablePath(),
+                            headless: chromium.headless,
+                            ignoreHTTPSErrors: true,
+                        })
+                    } else {
+                        browser = await puppeteer.launch({
+                            // executablePath: '/path/to/chrome/executable',
+                            headless: true, // or false for headful mode
+                            args: ['--no-sandbox', '--disable-setuid-sandbox'],                    
+                        });
+                    }
+                } catch(error) {
+                    console.error('Error in browser config', error);
+                    reject(error)
+                }
                 page = await browser.newPage();
 
                 if(browser && page){  // load the page and browser before fetching cookies
@@ -104,7 +121,6 @@ const mainFunction = (query) => {
                     } else {
                         await page.setCookie(...cookies);
                         await page.goto('https://www.linguee.fr/');   
-                        console.log('Cookies loaded from files')
                     };
                 };
             })
@@ -118,12 +134,16 @@ const mainFunction = (query) => {
                     const translationData = await fetchDataFromDivs(page);
                     console.log('Fetched translation data:', translationData);
                     // await page.screenshot({path: 'screenshot.png', fullPage:true})
-                    await browser.close();
                     resolve(translationData);
 
                 } catch (err) {
                     console.error('An error has occured while converting div into text', err)
                     reject (err);
+
+                } finally {
+                    if(browser) {
+                        await browser.close();
+                    };
                 };
             })
             .catch((error) => {
@@ -136,9 +156,7 @@ const mainFunction = (query) => {
             reject(err)
         }
     });
-}
-
-let page, browser;
+};
 
 exports.handler = async (event, context) => {
     
@@ -155,7 +173,6 @@ exports.handler = async (event, context) => {
             };
 
         const data = await mainFunction(query);
-
         if(data);
         return {
             statusCode: 200,
