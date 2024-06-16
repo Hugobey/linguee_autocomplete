@@ -1,0 +1,2 @@
+#!/bin/sh
+exec '/Applications/Chromium.app/Contents/MacOS/Chromium' "$@"
