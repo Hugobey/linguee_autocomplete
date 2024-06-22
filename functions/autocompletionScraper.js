@@ -21,7 +21,7 @@ const saveCookies = async (page) => {
 };
 const loadCookies = () => {
     // const cookiesFilePath = path.resolve(process.cwd(), 'functions/data/cookies/cookie.json');
-    const cookiesFilePath = path.join(process.cwd(),'functions/data/cookies/cookie.json')
+    const cookiesFilePath = path.join(process.cwd(),'functions/data/cookies/cookie.json') 
     console.log('Cookie path', cookiesFilePath);
     return new Promise ((resolve, reject) => {
         try {
@@ -95,11 +95,13 @@ const mainFunction = (query) => {
             loadCookies()
             .then(async (cookies) => {
                 try {
+                    const chromiumPath = path.join(process.cwd(),'functions/data/chromium/chromium') 
+                    console.log('chromium path: ', chromiumPath)
                     // if(process.env.NODE_ENV === 'production'){
                         browser = await puppeteer.launch({
                             args: [...chromium.args, '--no-sandbox', '--disable-setuid-sandbox'],                            
                             defaultViewport: chromium.defaultViewport,
-                            executablePath: chromium.path,
+                            executablePath: chromiumPath,
                             headless: chromium.headless,
                             ignoreHTTPSErrors: true,
                         })
