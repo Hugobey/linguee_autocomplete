@@ -1,5 +1,8 @@
-const puppeteer = process.env.NODE_ENV === 'production' ? require('puppeteer-core') : require('puppeteer')
-const chromium = require('@sparticuz/chromium');
+// const puppeteer = process.env.NODE_ENV === 'production' ? require('puppeteer-core') : require('puppeteer')
+// const puppeteer = require('puppeteer')
+import chromium from '@sparticuz/chromium';
+import puppeteer from 'puppeteer-core';
+// const chromium = require('@sparticuz/chromium');
 const fs = require('fs');
 const path = require('path');
 require('dotenv').config();
@@ -17,8 +20,8 @@ const saveCookies = async (page) => {
     });
 };
 const loadCookies = () => {
-    const cookiesFilePath = path.resolve(process.cwd(), 'functions/data/cookie.json');
-    console.log('path', cookiesFilePath);
+    const cookiesFilePath = path.resolve(process.cwd(), 'functions/data/cookies/cookie.json');
+    console.log('Cookie path', cookiesFilePath);
     return new Promise ((resolve, reject) => {
         try {
             fs.access(cookiesFilePath, fs.constants.R_OK, (err) => {
@@ -91,21 +94,22 @@ const mainFunction = (query) => {
             loadCookies()
             .then(async (cookies) => {
                 try {
-                    if(process.env.NODE_ENV === 'production'){
-                        browser = await puppeteer.connect({
-                            args: chromium.args,
+                    // if(process.env.NODE_ENV === 'production'){
+                        browser = await puppeteer.launch({
+                            args: [...chromium.args, '--no-sandbox', '--disable-setuid-sandbox'],                            
                             defaultViewport: chromium.defaultViewport,
-                            executablePath: await chromium.executablePath(),
+                            executablePath: 'functions/data/chromium/chromium',
                             headless: chromium.headless,
                             ignoreHTTPSErrors: true,
                         })
-                    } else {
-                        browser = await puppeteer.launch({
-                            // executablePath: '/path/to/chrome/executable',
-                            headless: true, // or false for headful mode
-                            args: ['--no-sandbox', '--disable-setuid-sandbox'],                    
-                        });
-                    }
+                    // } else {
+                        // browser = await puppeteer.launch({
+                        //     // executablePath: '/Users/hugoblanchart/Desktop/linguee/functions/data/chromium',
+                        //     executablePath: process.env.PUPPETEER_EXECUTABLE_PATH,
+                        //     headless: true, // or false for headful mode
+                        //     args: ['--no-sandbox', '--disable-setuid-sandbox'],                    
+                        // });
+                    // }
                 } catch(error) {
                     console.error('Error in browser config', error);
                     reject(error)

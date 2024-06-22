@@ -3,13 +3,10 @@
     command = "CI= npm run build"
     publish = "build"
 
-[build.environment]
-  NODE_ENV = "production"    # Sets the Node environment to 'production'
-  PUPPETEER_SKIP_CHROMIUM_DOWNLOAD = "true"   # Tells Puppeteer not to download Chromium during build
-
 [functions]
   node_bundler = "esbuild"
   included_files = ["functions/data/*"]
+  external_node_modules = ["@sparticuz/chromium"]
 
 [context.production.environment]
     NODE_ENV = "production"
