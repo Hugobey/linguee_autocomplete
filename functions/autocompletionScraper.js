@@ -99,7 +99,7 @@ const mainFunction = (query) => {
                         browser = await puppeteer.launch({
                             args: [...chromium.args, '--no-sandbox', '--disable-setuid-sandbox'],                            
                             defaultViewport: chromium.defaultViewport,
-                            executablePath: 'functions/data/chromium/chromium',
+                            executablePath: chromium.path,
                             headless: chromium.headless,
                             ignoreHTTPSErrors: true,
                         })
