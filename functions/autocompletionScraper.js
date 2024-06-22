@@ -20,7 +20,8 @@ const saveCookies = async (page) => {
     });
 };
 const loadCookies = () => {
-    const cookiesFilePath = path.resolve(process.cwd(), 'functions/data/cookies/cookie.json');
+    // const cookiesFilePath = path.resolve(process.cwd(), 'functions/data/cookies/cookie.json');
+    const cookiesFilePath = path.join(process.cwd(),'functions/data/cookies/cookie.json')
     console.log('Cookie path', cookiesFilePath);
     return new Promise ((resolve, reject) => {
         try {
