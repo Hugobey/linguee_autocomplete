@@ -10,6 +10,3 @@
 
 [context.production.environment]
     NODE_ENV = "production"
-
-[context.development.environment]
-    NODE_ENV = "development"
