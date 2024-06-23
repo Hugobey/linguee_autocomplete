@@ -2,7 +2,6 @@
 // const puppeteer = require('puppeteer')
 import chromium from '@sparticuz/chromium';
 import puppeteer from 'puppeteer-core';
-// const chromium = require('@sparticuz/chromium');
 const fs = require('fs');
 const path = require('path');
 require('dotenv').config();
@@ -95,13 +94,12 @@ const mainFunction = (query) => {
             loadCookies()
             .then(async (cookies) => {
                 try {
-                    const chromiumPath = path.join(process.cwd(),'functions/data/chromium/chromium') 
-                    console.log('chromium path: ', chromiumPath)
-                    // if(process.env.NODE_ENV === 'production'){
+                    console.log('Environnnement', process.env.NODE_ENV)
                         browser = await puppeteer.launch({
                             args: [...chromium.args, '--no-sandbox', '--disable-setuid-sandbox'],                            
                             defaultViewport: chromium.defaultViewport,
-                            executablePath: chromiumPath,
+                            executablePath: process.env.NODE_ENV === 'development'?'/Applications/Chromium.app/Contents/MacOS/Chromium': 
+                            'functions/data/chromium/Chromium',
                             headless: chromium.headless,
                             ignoreHTTPSErrors: true,
                         })
