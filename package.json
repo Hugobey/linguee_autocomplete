@@ -42,6 +42,7 @@
   },
   "devDependencies": {
     "netlify-cli": "^17.26.1",
+    "netlify-plugin-inline-functions-env": "^1.0.9",
     "nodemon": "^3.1.3"
   }
 }
