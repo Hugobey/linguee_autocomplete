@@ -99,7 +99,7 @@ const mainFunction = (query) => {
                             args: [...chromium.args, '--no-sandbox', '--disable-setuid-sandbox'],                            
                             defaultViewport: chromium.defaultViewport,
                             executablePath: process.env.NODE_ENV === 'development'?'/Applications/Chromium.app/Contents/MacOS/Chromium': 
-                            'functions/data/chromium/Chromium',
+                            '/var/task/functions/data/chromium/Chromium',
                             headless: chromium.headless,
                             ignoreHTTPSErrors: true,
                         })
