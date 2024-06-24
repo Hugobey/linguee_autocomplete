@@ -1,8 +1,8 @@
 // const puppeteer = process.env.NODE_ENV === 'production' ? require('puppeteer-core') : require('puppeteer')
 // const puppeteer = require('puppeteer')
-// import chromium from '@sparticuz/chromium';
+import chromium from '@sparticuz/chromium';
 // import chromium from 'chromium';
-// import puppeteer from 'puppeteer-core';
+import puppeteer from 'puppeteer-core';
 // const { headless } = require('@sparticuz/chromium');
 const fs = require('fs');
 const path = require('path');
@@ -97,24 +97,24 @@ const mainFunction = (query) => {
             loadCookies()
             .then(async (cookies) => {
                 try {
-                    const PCR = require("puppeteer-chromium-resolver");
-                    const options = {};
-                    const stats = await PCR(options);
+                    // const PCR = require("puppeteer-chromium-resolver");
+                    // const options = {};
+                    // const stats = await PCR(options);
                     console.log('Environnnement', process.env.NODE_ENV)
-                        // browser = await puppeteer.launch({
-                        //     args: [...chromium.args, '--no-sandbox', '--disable-setuid-sandbox'],                            
-                        //     defaultViewport: chromium.defaultViewport,
-                        //     executablePath: process.env.NODE_ENV === 'development'?'/Applications/Chromium.app/Contents/MacOS/Chromium': 
-                        //     '/usr/bin/chromium-browser',
-                        //     headless: chromium.headless,
-                        //     ignoreHTTPSErrors: true,
-                        // })
-                        browser = await stats.puppeteer.launch({
-                            headless: true,
-                            args: ["--no-sandbox"],
-                            executablePath: stats.executablePath,
+                        browser = await puppeteer.launch({
+                            args: [...chromium.args, '--no-sandbox', '--disable-setuid-sandbox'],                            
+                            defaultViewport: chromium.defaultViewport,
+                            executablePath: process.env.NODE_ENV === 'development'?'/Applications/Chromium.app/Contents/MacOS/Chromium': 
+                            '/usr/bin/chromium-browser',
+                            headless: chromium.headless,
                             ignoreHTTPSErrors: true,
-                        });
+                        })
+                        // browser = await stats.puppeteer.launch({
+                        //     headless: true,
+                        //     args: ["--no-sandbox"],
+                        //     executablePath: stats.executablePath,
+                        //     ignoreHTTPSErrors: true,
+                        // });
                 } catch(error) {
                     console.error('Error in browser config', error);
                     reject(error)
