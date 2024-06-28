@@ -10,6 +10,7 @@
 
 [context.production.environment]
     NODE_ENV = "production"
+    PUPPETEER_EXECUTABLE_PATH = "/opt/homebrew/bin/chromium"
 
 [[plugins]]
 package = "netlify-plugin-inline-functions-env"
