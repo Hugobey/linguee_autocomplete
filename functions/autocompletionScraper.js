@@ -49,25 +49,6 @@ const loadCookies = () => {
     });
 };
 
-// CHROMIUM
-const downloadChromium = (url, dest) => {
-    return new Promise((resolve, reject) => {
-        const file = fs.createWriteStream(dest);
-        https.get(url, response => {
-            response.pipe(file);
-            file.on('finish', () => {
-                file.close(() => {
-                    console.log('Download chromium with success!')
-                    resolve()
-                })
-            });
-        })
-        .on('error', () => {
-            fs.unlink(dest, () => reject(error))
-        });
-    });
-}
-
 // FETCH DIV
 const fetchDataFromDivs= async (page) => {
     return page.evaluate(() => {
@@ -112,37 +93,27 @@ const mainFunction = (query) => {
     return new Promise (async (resolve, reject) => {
         let browser = null; let page;
         try {     
-            loadCookies()
+            await loadCookies()
             .then(async (cookies) => {
                 try {
                     const executable = await chromium.executablePath()
                     console.log('OUTPUT', executable)
-                    // const PCR = require("puppeteer-chromium-resolver");
-                    // const options = {};
-                    // const stats = await PCR(options);
                     console.log('Environnnement is', process.env.NODE_ENV, )
                         browser = await puppeteer.launch({
                             args: [...chromium.args, '--no-sandbox', '--disable-setuid-sandbox'],                            
                             defaultViewport: chromium.defaultViewport,
-                            // executablePath: process.env.CHROME_EXECUTABLE_PATH || await 
-                            // chromium.executablePath(),
                             executablePath: process.env.NODE_ENV === 'development'
                             ?'/Applications/Chromium.app/Contents/MacOS/Chromium'
                             : await chromium.executablePath(),
                             headless: chromium.headless,
                             ignoreHTTPSErrors: true,
-                        })
-                        // browser = await stats.puppeteer.launch({
-                        //     headless: true,
-                        //     args: ["--no-sandbox"],
-                        //     executablePath: stats.executablePath,
-                        //     ignoreHTTPSErrors: true,
-                        // });
+                        });
                 } catch(error) {
                     console.error('Error in browser config', error);
                     reject(error)
                 }
                 page = await browser.newPage();
+                console.log(`page is ${page !== undefined}, browser is ${browser !== undefined}, cookies are ${cookies !== undefined}`)
 
                 if(browser && page){  // load the page and browser before fetching cookies
                     if(!cookies) {
@@ -194,17 +165,6 @@ const mainFunction = (query) => {
 exports.handler = async (event, context, callback) => {
     
     try {
-        const chromiumUrl = 'https://www.googleapis.com/download/storage/v1/b/chromium-browser-snapshots/o/Linux_x64%2F023ca1a208be4349534e73032671f4ee8004e553%2Fchrome-linux.zip?generation=1375035907038000&alt=media';
-        const chromiumPathRepo = path.join(__dirname, '/data/chromium/chrome')
-
-        
-        // if(!fs.existsSync(chromiumPathRepo)){
-        //     console.log('Chromium has not been downloaded yet')
-        //     await downloadChromium(chromiumUrl, chromiumPathRepo);
-        //     console.log('Chromium dowloaded successfully');
-        // } else {
-        //     console.log('Chromium already exist');
-        // }
 
         const query = event.queryStringParameters.query;
         if(!query) {
