@@ -21,7 +21,6 @@ const saveCookies = async (page) => {
     });
 };
 const loadCookies = () => {
-    // const cookiesFilePath = path.resolve(process.cwd(), 'functions/data/cookies/cookie.json');
     const cookiesFilePath = path.join(process.cwd(),'functions/data/cookies/cookie.json') 
     console.log('Cookie path', cookiesFilePath);
     return new Promise ((resolve, reject) => {
@@ -51,48 +50,46 @@ const loadCookies = () => {
 
 // FETCH DIV
 const fetchDataFromDivs = async (page) => {
-    return new Promise ((resolve, reject) => {
-        try {
-            resolve(page.evaluate(async () => {
-               const autoCompletionDiv = document.querySelector('.autocompletion');
-               if(autoCompletionDiv){
-                   const itemDivs = autoCompletionDiv.querySelectorAll('.autocompletion_item');
-                   totalDivs = itemDivs
-                   return Array.from(itemDivs).map(itemDiv => {
-       
-                       if (itemDiv) {
-                           const mainRowDiv = itemDiv.querySelector('.main_row');
-                           let mainWord = null;
-                           let wordTypes = [];
-               
-                           if (mainRowDiv) {
-                               const mainItemDiv = mainRowDiv.querySelector('.main_item');
-                               mainWord = mainItemDiv ? mainItemDiv.innerText.trim() : null;
-               
-                               const wordTypeDivs = mainRowDiv.querySelectorAll('.main_wordtype');
-                               wordTypes = Array.from(wordTypeDivs).map(div => div.innerText.trim());
-                           };
-               
-                           const translationRows = itemDiv.querySelectorAll('.translation_row.line.singleline');
-                           const translationTexts = Array.from(translationRows).map(row => row.innerText.trim());
-               
-                           return {
-                               mainRow: {
-                                   mainWord,
-                                   wordTypes
-                               },
-                               translations: translationTexts
-                           };
-                       };
-                   })
-               }
-               return []
-           }));
-        } catch (err) {
-            console.error('Error while fetching data from Divs', err)
-            reject(err)
-        };
-    });
+    try {
+        return page.evaluate(async () => {
+            const autoCompletionDiv = document.querySelector('.autocompletion');
+            if(autoCompletionDiv){
+                const itemDivs = autoCompletionDiv.querySelectorAll('.autocompletion_item');
+                totalDivs = itemDivs
+                return Array.from(itemDivs).map(itemDiv => {
+    
+                    if (itemDiv) {
+                        const mainRowDiv = itemDiv.querySelector('.main_row');
+                        let mainWord = null;
+                        let wordTypes = [];
+            
+                        if (mainRowDiv) {
+                            const mainItemDiv = mainRowDiv.querySelector('.main_item');
+                            mainWord = mainItemDiv ? mainItemDiv.innerText.trim() : null;
+            
+                            const wordTypeDivs = mainRowDiv.querySelectorAll('.main_wordtype');
+                            wordTypes = Array.from(wordTypeDivs).map(div => div.innerText.trim());
+                        };
+            
+                        const translationRows = itemDiv.querySelectorAll('.translation_row.line.singleline');
+                        const translationTexts = Array.from(translationRows).map(row => row.innerText.trim());
+            
+                        return {
+                            mainRow: {
+                                mainWord,
+                                wordTypes
+                            },
+                            translations: translationTexts
+                        };
+                    };
+                })
+            }
+            return []
+        });
+    } catch (err) {
+        console.error('Error while fetching data from Divs', err)
+        return err
+    };
 };
 
 const mainFunction = async (query) => {
@@ -119,9 +116,10 @@ const mainFunction = async (query) => {
                     reject(error)
                 }
                 page = await browser.newPage();
-                console.log(`page is ${page !== undefined}, browser is ${browser !== undefined}, cookies are ${cookies !== undefined}`)
+                console.log(`page is ${page !== undefined}, browser is ${browser !== undefined}`, 'Cookies', cookies)
 
                 if(browser && page){  // load the page and browser before fetching cookies
+                    console.log('Entering browser and page condition')
                     if(!cookies) {
                         await page.goto('https://www.linguee.fr/');
                         await page.waitForSelector('#accept-choices');
@@ -129,6 +127,8 @@ const mainFunction = async (query) => {
                         await saveCookies(page);
                         console.log('Send to saveCookie function');
                     } else {
+                        console.log('Setting cookies to page')
+                        // Promise.all([await page.setCookie(...cookies), await page.goto('https://www.linguee.fr/')])
                         await page.setCookie(...cookies);
                         await page.goto('https://www.linguee.fr/');
                         console.log('reached Linguee website')
