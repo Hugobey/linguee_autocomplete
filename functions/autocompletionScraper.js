@@ -118,6 +118,10 @@ const mainFunction = async (query) => {
                 }
                 page = await browser.newPage();
 
+                page.on('console', msg => console.log('PAGE LOG:', msg.text()));
+                page.on('error', err => console.error('PAGE ERROR:', err));
+                page.on('pageerror', err => console.error('PAGE PAGEERROR:', err));
+
                 if(browser && page){  // load the page and browser before fetching cookies
                     console.log('Entering browser and page condition')
                     if(!cookies) {
