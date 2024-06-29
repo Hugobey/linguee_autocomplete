@@ -50,46 +50,52 @@ const loadCookies = () => {
 };
 
 // FETCH DIV
-const fetchDataFromDivs= async (page) => {
-    return page.evaluate(() => {
-        const autoCompletionDiv = document.querySelector('.autocompletion');
-
-        if(autoCompletionDiv){
-            const itemDivs = autoCompletionDiv.querySelectorAll('.autocompletion_item');
-            totalDivs = itemDivs
-            return Array.from(itemDivs).map(itemDiv => {
-
-                if (itemDiv) {
-                    const mainRowDiv = itemDiv.querySelector('.main_row');
-                    let mainWord = null;
-                    let wordTypes = [];
-        
-                    if (mainRowDiv) {
-                        const mainItemDiv = mainRowDiv.querySelector('.main_item');
-                        mainWord = mainItemDiv ? mainItemDiv.innerText.trim() : null;
-        
-                        const wordTypeDivs = mainRowDiv.querySelectorAll('.main_wordtype');
-                        wordTypes = Array.from(wordTypeDivs).map(div => div.innerText.trim());
-                    };
-        
-                    const translationRows = itemDiv.querySelectorAll('.translation_row.line.singleline');
-                    const translationTexts = Array.from(translationRows).map(row => row.innerText.trim());
-        
-                    return {
-                        mainRow: {
-                            mainWord,
-                            wordTypes
-                        },
-                        translations: translationTexts
-                    };
-                };
-            })
-        }
-        return []
+const fetchDataFromDivs = async (page) => {
+    return new Promise ((resolve, reject) => {
+        try {
+            resolve(page.evaluate(async () => {
+               const autoCompletionDiv = document.querySelector('.autocompletion');
+               if(autoCompletionDiv){
+                   const itemDivs = autoCompletionDiv.querySelectorAll('.autocompletion_item');
+                   totalDivs = itemDivs
+                   return Array.from(itemDivs).map(itemDiv => {
+       
+                       if (itemDiv) {
+                           const mainRowDiv = itemDiv.querySelector('.main_row');
+                           let mainWord = null;
+                           let wordTypes = [];
+               
+                           if (mainRowDiv) {
+                               const mainItemDiv = mainRowDiv.querySelector('.main_item');
+                               mainWord = mainItemDiv ? mainItemDiv.innerText.trim() : null;
+               
+                               const wordTypeDivs = mainRowDiv.querySelectorAll('.main_wordtype');
+                               wordTypes = Array.from(wordTypeDivs).map(div => div.innerText.trim());
+                           };
+               
+                           const translationRows = itemDiv.querySelectorAll('.translation_row.line.singleline');
+                           const translationTexts = Array.from(translationRows).map(row => row.innerText.trim());
+               
+                           return {
+                               mainRow: {
+                                   mainWord,
+                                   wordTypes
+                               },
+                               translations: translationTexts
+                           };
+                       };
+                   })
+               }
+               return []
+           }));
+        } catch (err) {
+            console.error('Error while fetching data from Divs', err)
+            reject(err)
+        };
     });
 };
 
-const mainFunction = (query) => {
+const mainFunction = async (query) => {
     return new Promise (async (resolve, reject) => {
         let browser = null; let page;
         try {     
@@ -124,7 +130,8 @@ const mainFunction = (query) => {
                         console.log('Send to saveCookie function');
                     } else {
                         await page.setCookie(...cookies);
-                        await page.goto('https://www.linguee.fr/');   
+                        await page.goto('https://www.linguee.fr/');
+                        console.log('reached Linguee website')
                     };
                 };
             })
@@ -139,15 +146,11 @@ const mainFunction = (query) => {
                     console.log('Fetched translation data:', translationData);
                     // await page.screenshot({path: 'screenshot.png', fullPage:true})
                     resolve(translationData);
+                    await browser.close();
 
                 } catch (err) {
                     console.error('An error has occured while converting div into text', err)
                     reject (err);
-
-                } finally {
-                    if(browser) {
-                        await browser.close();
-                    };
                 };
             })
             .catch((error) => {
