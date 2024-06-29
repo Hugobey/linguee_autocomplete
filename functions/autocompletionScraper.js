@@ -94,7 +94,7 @@ const fetchDataFromDivs = async (page) => {
 
 const mainFunction = async (query) => {
     return new Promise (async (resolve, reject) => {
-        let browser = null; let page;
+        let browser = null; let page = null;
         try {     
             await loadCookies()
             .then(async (cookies) => {
@@ -128,8 +128,8 @@ const mainFunction = async (query) => {
                         console.log('Send to saveCookie function');
                     } else {
                         console.log('Setting cookies to page')
-                        // Promise.all([await page.setCookie(...cookies), await page.goto('https://www.linguee.fr/')])
                         await page.setCookie(...cookies);
+                        console.log('Cookies set succesfully')
                         await page.goto('https://www.linguee.fr/');
                         console.log('reached Linguee website')
                     };
