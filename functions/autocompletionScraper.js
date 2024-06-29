@@ -1,5 +1,6 @@
 // const puppeteer = require('puppeteer')
 import chromium from '@sparticuz/chromium';
+import { timeout } from 'puppeteer';
 // import chromium from 'chromium';
 import puppeteer from 'puppeteer-core';
 // const { headless } = require('@sparticuz/chromium');
@@ -116,7 +117,6 @@ const mainFunction = async (query) => {
                     reject(error)
                 }
                 page = await browser.newPage();
-                console.log(`page is ${page !== undefined}, browser is ${browser !== undefined}`, 'Cookies', cookies)
 
                 if(browser && page){  // load the page and browser before fetching cookies
                     console.log('Entering browser and page condition')
@@ -130,7 +130,7 @@ const mainFunction = async (query) => {
                         console.log('Setting cookies to page')
                         await page.setCookie(...cookies);
                         console.log('Cookies set succesfully')
-                        await page.goto('https://www.linguee.fr/');
+                        await page.goto('https://www.linguee.fr/', {timeout: 60000});
                         console.log('reached Linguee website')
                     };
                 };
