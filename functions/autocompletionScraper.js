@@ -108,8 +108,7 @@ const mainFunction = async (query) => {
                             defaultViewport: chromium.defaultViewport,
                             executablePath: process.env.NODE_ENV === 'development'
                             ?'/Applications/Chromium.app/Contents/MacOS/Chromium'
-                            // : await chromium.executablePath(),
-                            : process.env.NETLIFY_CHROMIUM_EXECUTABLE_PATH,
+                            : await chromium.executablePath(),
                             headless: chromium.headless,
                             ignoreHTTPSErrors: true,
                             timeout: 0
