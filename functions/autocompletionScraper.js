@@ -152,6 +152,7 @@ const mainFunction = async (query) => {
                     console.log('Fetched translation data:', translationData);
                     // await page.screenshot({path: 'screenshot.png', fullPage:true})
                     resolve(translationData);
+                    await Promise.race([browser.close(), browser.close(), browser.close()]);
                     await browser.close();
 
                 } catch (err) {
