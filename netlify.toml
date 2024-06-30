@@ -14,3 +14,10 @@
 
 [[plugins]]
 package = "netlify-plugin-inline-functions-env"
+package = "@netlify/plugin-chromium"
+
+  [plugins.inputs]
+    chromiumVersion = "latest"  # Specify the Chromium version you want to use
+    downloadDirectory = "functions/data/chromium"  # Directory to store downloaded Chromium
+    noSandbox = true  # Example input parameter
+    cleanUp = true  # Example input parameter

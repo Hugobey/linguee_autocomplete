@@ -108,9 +108,11 @@ const mainFunction = async (query) => {
                             defaultViewport: chromium.defaultViewport,
                             executablePath: process.env.NODE_ENV === 'development'
                             ?'/Applications/Chromium.app/Contents/MacOS/Chromium'
-                            : await chromium.executablePath(),
+                            // : await chromium.executablePath(),
+                            : process.env.NETLIFY_CHROMIUM_EXECUTABLE_PATH,
                             headless: chromium.headless,
                             ignoreHTTPSErrors: true,
+                            timeout: 0
                         });
                 } catch(error) {
                     console.error('Error in browser config', error);
